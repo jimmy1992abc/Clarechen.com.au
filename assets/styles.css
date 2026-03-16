@@ -2,7 +2,7 @@
 .toolbar{
   display:flex;
   align-items:center;
-  justify-content:center;
+  justify-content:flex-start;
   gap:12px;
   padding: 6px 8px;
 
@@ -16,7 +16,7 @@
   align-items:center;
   justify-content:center;
 
-  padding: 10px 14px;
+  padding: 20px 28px;
   border-radius: 999px;
 
   border: 1px solid rgba(255,255,255,.10);
