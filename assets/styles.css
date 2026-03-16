@@ -1,40 +1,49 @@
+/* toolbar container */
 .toolbar{
   display:flex;
-  gap:12px;
   align-items:center;
   justify-content:center;
-  padding:12px 14px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  border-radius: 18px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 12px 40px rgba(0,0,0,.35);
-  margin-bottom: 14px;
+  gap:12px;
+  padding: 6px 8px;
+
+  /* distance from main card */
+  margin-bottom: 18px;
 }
 
-.tool-item{
-  text-decoration:none;
-  color: rgba(255,255,255,.75);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  letter-spacing:.18em;
-  font-size: 12px;
+/* pill buttons that match your “Welcome to the world” vibe */
+.tool-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
   padding: 10px 14px;
-  border-radius: 14px;
+  border-radius: 999px;
+
   border: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.18);
+  background: rgba(0,0,0,.28);
+
+  color: rgba(255,255,255,.72);
+  text-decoration: none;
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  font-size: 12px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
   transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
 }
 
-.tool-item:hover{
+.tool-pill:hover{
   transform: translateY(-1px);
   background: rgba(255,255,255,.08);
   border-color: rgba(255,255,255,.18);
   color: rgba(255,255,255,.92);
 }
 
-.tool-item.active{
+/* active tab - subtle highlight */
+.tool-pill.active{
   background: rgba(255,255,255,.10);
   border-color: rgba(255,255,255,.22);
-  color: rgba(255,255,255,.95);
+  color: rgba(255,255,255,.96);
 }
