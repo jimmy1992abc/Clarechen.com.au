@@ -47,3 +47,77 @@
   border-color: rgba(255,255,255,.22);
   color: rgba(255,255,255,.96);
 }
+
+/* --- Timer card inside .stat (matches your current hero stats style) --- */
+.stat--timer {
+  padding: 16px;
+}
+
+.timerRow{
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.timerCell{
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  border-radius: 14px;
+  padding: 10px 10px 8px;
+}
+
+.timerCell__label{
+  font-size: 11px;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: var(--muted, rgba(255,255,255,.65));
+}
+
+.timerCell__value{
+  margin-top: 6px;
+  font-weight: 800;
+  font-size: clamp(18px, 2.2vw, 28px);
+  line-height: 1;
+  color: rgba(234,240,255,.95);
+  text-shadow: 0 0 18px rgba(118,169,255,.10);
+}
+
+.timerMeta{
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--muted, rgba(255,255,255,.65));
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.timerDot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #34d399;
+  box-shadow: 0 0 16px rgba(52,211,153,.5);
+}
+
+.timerDot.future{
+  background: #fbbf24;
+  box-shadow: 0 0 16px rgba(251,191,36,.55);
+}
+
+.timerSub{
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted, rgba(255,255,255,.65));
+  line-height: 1.4;
+}
+
+/* Responsive: stack timer cells on smaller screens */
+@media (max-width: 920px){
+  .timerRow{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 520px){
+  .timerRow{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

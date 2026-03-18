@@ -21,6 +21,8 @@
   <link rel="stylesheet" href="assets/css/site.css" />
 </head>
 
+<script src="assets/app.js"></script>
+
 <body>
   <!-- Intro / Welcome Screen -->
   <div class="intro" id="intro" aria-hidden="true">
@@ -88,20 +90,51 @@
           <a class="btn btn--soft" href="#contact">Get in touch</a>
         </div>
 
-        <div class="hero__meta reveal">
-          <div class="stat">
-            <div class="stat__label">Focus</div>
-            <div class="stat__value">Systems • Writing • Delivery</div>
-          </div>
-          <div class="stat">
-            <div class="stat__label">Location</div>
-            <div class="stat__value">Australia</div>
-          </div>
-          <div class="stat">
-            <div class="stat__label">Currently</div>
-            <div class="stat__value">Open to collaborations</div>
-          </div>
-        </div>
+        
+<div class="hero__meta reveal">
+  <div class="stat stat--timer">
+    <div class="stat__label" id="timerTitle">BORN SINCE</div>
+
+    <div class="timerRow">
+      <div class="timerCell">
+        <div class="timerCell__label">Years</div>
+        <div class="timerCell__value" id="years">0</div>
+      </div>
+
+      <div class="timerCell">
+        <div class="timerCell__label">Days</div>
+        <div class="timerCell__value" id="days">0</div>
+      </div>
+
+      <div class="timerCell">
+        <div class="timerCell__label">Hrs</div>
+        <div class="timerCell__value" id="hours">00</div>
+      </div>
+
+      <div class="timerCell">
+        <div class="timerCell__label">Min</div>
+        <div class="timerCell__value" id="mins">00</div>
+      </div>
+
+      <div class="timerCell">
+        <div class="timerCell__label">Sec</div>
+        <div class="timerCell__value" id="secs">00</div>
+      </div>
+    </div>
+
+    <div class="timerMeta">
+      <span class="timerDot" id="dot" aria-hidden="true"></span>
+      <span class="timerMeta__text" id="modeText">—</span>
+      <span class="timerMeta__sep" aria-hidden="true">•</span>
+      <span class="timerMeta__text">
+        total days: <strong id="totalDays">0</strong>
+      </span>
+    </div>
+
+    <div class="timerSub" id="subtitle">Loading…</div>
+  </div>
+</div>
+
 
         <a class="scrollHint" href="#event" aria-label="Scroll to the events">
           <span class="scrollHint__mouse" aria-hidden="true"></span>
