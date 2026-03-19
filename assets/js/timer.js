@@ -2,7 +2,7 @@
   // =========================
   // ✅ CONFIG (hardcode here)
   // =========================
-  const TITLE = "BORN SINCE";
+  const TITLE = "A soul arrives, and suddenly the world feels more complete.";
   const START_DATE_DDMMYYYY = "16012026"; // DDMMYYYY e.g. 01012020
   const START_TIME_HHMM = "07:23"; // HH:MM (24h) e.g. 09:30
   const USE_UTC = false; // true = interpret date/time as UTC
@@ -36,6 +36,36 @@
       : new Date(yyyy, mm - 1, dd, hh, min, 0);
   }
 
+  function isLeapYear(year) {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  }
+
+  function calculateYearsAndDaysWithLeapYears(startDate, endDate) {
+    const earlier = startDate <= endDate ? startDate : endDate;
+    const later = startDate <= endDate ? endDate : startDate;
+
+    let years = 0;
+    let currentDate = new Date(earlier);
+
+    // Count complete years, accounting for leap years
+    while (true) {
+      const nextYear = new Date(
+        currentDate.getFullYear() + 1,
+        currentDate.getMonth(),
+        currentDate.getDate()
+      );
+      if (nextYear > later) break;
+      years++;
+      currentDate = nextYear;
+    }
+
+    // Count remaining days
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const days = Math.floor((later - currentDate) / msPerDay);
+
+    return { years, days };
+  }
+
   function splitDuration(msAbs) {
     const totalSeconds = Math.floor(msAbs / 1000);
     const seconds = totalSeconds % 60;
@@ -44,10 +74,7 @@
     const totalHours = Math.floor(totalMinutes / 60);
     const hours = totalHours % 24;
     const totalDays = Math.floor(totalHours / 24);
-    // Simple stable display: years = 365 days
-    const years = Math.floor(totalDays / 365);
-    const days = totalDays % 365;
-    return { years, days, hours, minutes, seconds, totalDays };
+    return { years: 0, days: totalDays, hours, minutes, seconds, totalDays };
   }
 
   // Set up DOM references (safely; this file is loaded on every page)
@@ -102,6 +129,14 @@
     const isFuture = delta < 0;
     const parts = splitDuration(Math.abs(delta));
 
+    // Override years and days with leap-year-aware calculation
+    const { years: accurateYears, days: accurateDays } = calculateYearsAndDaysWithLeapYears(
+      start,
+      now
+    );
+    parts.years = accurateYears;
+    parts.days = accurateDays;
+
     if (yearsEl) yearsEl.textContent = String(parts.years);
     if (daysEl) daysEl.textContent = String(parts.days);
     if (hoursEl) hoursEl.textContent = pad2(parts.hours);
@@ -113,10 +148,11 @@
     modeTextEl.textContent = isFuture ? "Counting down to start" : "Counting up since start";
 
     const tzLabel = USE_UTC ? "UTC" : "Local";
-    subtitleEl.textContent =
-      (isFuture ? "Starts at " : "Started at ") +
-      start.toLocaleString(DISPLAY_LOCALE, { hour12: false }) +
-      " (" + tzLabel + ")";
+    // Subtitle removed per user request
+    // subtitleEl.textContent =
+    //   (isFuture ? "Starts at " : "Started at ") +
+    //   start.toLocaleString(DISPLAY_LOCALE, { hour12: false }) +
+    //   " (" + tzLabel + ")";
   }
 
   tick();
