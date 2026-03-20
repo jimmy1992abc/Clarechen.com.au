@@ -291,8 +291,8 @@
           return;
         }
 
-        // Fetch event markdown from /event/list/{slug}/{slug}.md
-        const mdPath = `/event/list/${slug}/${slug}.md`;
+        // Fetch event markdown from /event/.list/{slug}.md
+        const mdPath = `/event/.list/${slug}.md`;
         console.log('[Event Template] Fetching:', mdPath);
         
         const response = await fetch(mdPath);
