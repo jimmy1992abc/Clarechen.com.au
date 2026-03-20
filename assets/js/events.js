@@ -64,11 +64,11 @@ async function loadPublishedEvents() {
   try {
     console.log('[Events] Starting to load published events from master index...');
     
-    // Read the master index file (/event/index.md) to get the list of active events
-    const indexEvent = await parseMarkdownFile('event/index.md');
+    // Read the master index file from GitHub raw content
+    const indexEvent = await parseMarkdownFile('https://raw.githubusercontent.com/jimmy1992abc/Clarechen.com.au/main/event/index.md');
     
     if (!indexEvent) {
-      console.error('[Events] Failed to load master index /event/index.md');
+      console.error('[Events] Failed to load master index from GitHub');
       return [];
     }
 
@@ -94,9 +94,9 @@ async function loadPublishedEvents() {
 
     const events = [];
 
-    // Load each active event from event/{slug}/{slug}.md
+    // Load each active event from GitHub raw content
     for (const slug of activeEventSlugs) {
-      const eventPath = `event/${slug}/${slug}.md`;
+      const eventPath = `https://raw.githubusercontent.com/jimmy1992abc/Clarechen.com.au/main/event/${slug}/${slug}.md`;
       console.log(`[Events] Loading event: ${eventPath}`);
       const event = await parseMarkdownFile(eventPath);
       

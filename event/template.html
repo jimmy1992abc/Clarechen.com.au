@@ -291,8 +291,8 @@
           return;
         }
 
-        // Fetch event markdown from same folder
-        const mdPath = `./${slug}.md`;
+        // Fetch event markdown from GitHub raw content
+        const mdPath = `https://raw.githubusercontent.com/jimmy1992abc/Clarechen.com.au/main/event/${slug}/${slug}.md`;
         console.log('[Event Template] Fetching:', mdPath);
         
         const response = await fetch(mdPath);
