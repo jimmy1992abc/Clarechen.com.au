@@ -3,7 +3,7 @@ title: "Design Workshop"
 date: "2026-05-20"
 time: "2:00 PM"
 location: "Studio XYZ, Sydney"
-jotformId: "260778160100853"
+jotformId: ""
 description: "Learn design fundamentals and best practices in a hands-on workshop"
 ---
 
