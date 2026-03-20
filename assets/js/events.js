@@ -57,7 +57,9 @@ async function loadPublishedEvents() {
     const events = [];
 
     for (const file of eventFiles) {
-      const event = await parseMarkdownFile(`/event/events/${file}`);
+      // Use relative path from the site root
+      const eventPath = `./event/events/${file}`;
+      const event = await parseMarkdownFile(eventPath);
       if (event && event.frontmatter.published === true) {
         events.push(event);
       }
@@ -68,6 +70,10 @@ async function loadPublishedEvents() {
 
     return events;
   } catch (error) {
+    console.error('Error loading published events:', error);
+    return [];
+  }
+}
     console.error('Error loading events:', error);
     return [];
   }
@@ -109,26 +115,34 @@ function createEventCard(event) {
 
 async function renderEventCards() {
   const container = document.getElementById('eventCardsContainer');
-  if (!container) return;
-
-  const events = await loadPublishedEvents();
-
-  if (events.length === 0) {
-    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--muted);">No upcoming events at the moment. Check back soon!</p>';
+  if (!container) {
+    console.warn('Event cards container not found');
     return;
   }
 
-  container.innerHTML = events.map(event => createEventCard(event)).join('');
+  try {
+    const events = await loadPublishedEvents();
 
-  // Manually set up reveal observer for dynamically added elements
-  const revealEls = Array.from(container.querySelectorAll(".reveal"));
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) e.target.classList.add("is-visible");
-    });
-  }, { threshold: 0.12 });
+    if (events.length === 0) {
+      container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--muted);">No upcoming events at the moment. Check back soon!</p>';
+      return;
+    }
 
-  revealEls.forEach(el => io.observe(el));
+    container.innerHTML = events.map(event => createEventCard(event)).join('');
+
+    // Manually set up reveal observer for dynamically added elements
+    const revealEls = Array.from(container.querySelectorAll(".reveal"));
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) e.target.classList.add("is-visible");
+      });
+    }, { threshold: 0.12 });
+
+    revealEls.forEach(el => io.observe(el));
+  } catch (error) {
+    console.error('Error rendering event cards:', error);
+    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--muted);">Error loading events.</p>';
+  }
 }
 
 // Export for use in other scripts

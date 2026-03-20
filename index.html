@@ -300,10 +300,22 @@
   <script src="assets/js/events.js" defer></script>
   <script defer>
     // Load events when DOM is ready
+    async function initEvents() {
+      try {
+        await renderEventCards();
+      } catch (error) {
+        console.error('Failed to render event cards:', error);
+        const container = document.getElementById('eventCardsContainer');
+        if (container) {
+          container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--muted);">Error loading events. Please refresh the page.</p>';
+        }
+      }
+    }
+
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', renderEventCards);
+      document.addEventListener('DOMContentLoaded', initEvents);
     } else {
-      renderEventCards();
+      initEvents();
     }
   </script>
 </body>
