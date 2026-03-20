@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../assets/css/site.css" />
+  <link rel="stylesheet" href="../../assets/css/site.css" />
   <style>
     /* Event detail page specific styles */
     .event-hero {
@@ -140,6 +140,18 @@
     .back-link::before {
       content: "←";
     }
+
+    .loading-message {
+      text-align: center;
+      color: var(--muted);
+      padding: 60px 24px;
+    }
+
+    .error-message {
+      text-align: center;
+      color: #ff6b6b;
+      padding: 60px 24px;
+    }
   </style>
 </head>
 
@@ -178,32 +190,8 @@
       <div class="container">
         <a class="back-link" href="/#event">Back to events</a>
         
-        <h1 class="event-hero__title" id="eventTitle">Loading event...</h1>
-        
-        <div class="event-meta">
-          <div class="event-meta__item">
-            <span class="event-meta__label">Date</span>
-            <span class="event-meta__value" id="eventDate">—</span>
-          </div>
-          <div class="event-meta__item">
-            <span class="event-meta__label">Time</span>
-            <span class="event-meta__value" id="eventTime">—</span>
-          </div>
-          <div class="event-meta__item">
-            <span class="event-meta__label">Location</span>
-            <span class="event-meta__value" id="eventLocation">—</span>
-          </div>
-        </div>
-
-        <div class="event-content" id="eventContent">
-          <p style="color: var(--muted);">Loading event details...</p>
-        </div>
-
-        <div class="jotform-container">
-          <h3>Register for this event</h3>
-          <div id="jotformContainer">
-            <p style="color: var(--muted); text-align: center;">Loading registration form...</p>
-          </div>
+        <div id="eventContent">
+          <div class="loading-message">Loading event...</div>
         </div>
       </div>
     </section>
@@ -221,53 +209,51 @@
     </div>
   </footer>
 
-  <script src="../assets/js/site.js" defer></script>
-  <script src="../assets/js/events.js" defer></script>
+  <script src="../../assets/js/site.js" defer></script>
   <script defer>
-    // Parse URL to get event slug
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    const eventSlug = pathParts[pathParts.indexOf('event') + 1];
+    // Set year in footer
+    const year = document.getElementById('year');
+    if (year) year.textContent = new Date().getFullYear();
 
-    // Load and display event
-    async function loadEventDetails() {
-      try {
-        const event = await parseMarkdownFile(`/event/events/${eventSlug}.md`);
-        
-        if (!event || !event.frontmatter.published) {
-          document.getElementById('eventTitle').textContent = 'Event not found';
-          document.getElementById('eventContent').innerHTML = '<p style="color: var(--muted);">This event is not available.</p>';
-          return;
-        }
-
-        const { frontmatter, content } = event;
-        const dateFormatted = formatDateLong(frontmatter.date);
-
-        // Update page title and meta
-        document.title = `${frontmatter.title} — Clare Chen`;
-        document.querySelector('meta[property="og:title"]').setAttribute('content', `${frontmatter.title} — Clare Chen`);
-        document.querySelector('meta[property="og:description"]').setAttribute('content', frontmatter.description);
-
-        // Fill in event details
-        document.getElementById('eventTitle').textContent = frontmatter.title;
-        document.getElementById('eventDate').textContent = dateFormatted;
-        document.getElementById('eventTime').textContent = frontmatter.time;
-        document.getElementById('eventLocation').textContent = frontmatter.location;
-
-        // Parse and display markdown content (skip frontmatter)
-        const contentHtml = parseMarkdownContent(content);
-        document.getElementById('eventContent').innerHTML = contentHtml;
-
-        // Load JotForm
-        const jotformContainer = document.getElementById('jotformContainer');
-        jotformContainer.innerHTML = `<iframe src="https://form.jotform.com/${frontmatter.jotformId}" frameborder="0" style="min-height: 600px;"></iframe>`;
-
-      } catch (error) {
-        console.error('Error loading event:', error);
-        document.getElementById('eventContent').innerHTML = '<p style="color: var(--muted);">Error loading event details. Please refresh the page.</p>';
+    // Parse markdown YAML frontmatter
+    function parseMarkdownFile(text) {
+      const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+      const match = text.match(frontmatterRegex);
+      
+      if (!match) {
+        console.error('[Event Template] No frontmatter found');
+        return null;
       }
+
+      const [, frontmatterStr, content] = match;
+      
+      // Parse YAML
+      const frontmatter = {};
+      frontmatterStr.split('\n').forEach(line => {
+        const [key, ...valueParts] = line.split(':');
+        if (key && valueParts.length > 0) {
+          let value = valueParts.join(':').trim();
+          value = value.replace(/^["'](.*)["']$/, '$1');
+          if (value === 'true') value = true;
+          if (value === 'false') value = false;
+          frontmatter[key.trim()] = value;
+        }
+      });
+
+      return { frontmatter, content };
     }
 
-    // Simple markdown to HTML parser
+    // Format date as "15 April 2026"
+    function formatDateLong(dateString) {
+      const date = new Date(dateString + 'T00:00:00');
+      return new Intl.DateTimeFormat('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }).format(date);
+    }
+
+    // Convert markdown to HTML
     function parseMarkdownContent(markdown) {
       let html = markdown
         .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
@@ -277,21 +263,105 @@
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/^\- (.*?)$/gm, '<li>$1</li>')
         .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n\n+/g, '</p><p>')
         .replace(/^(?!<[hu]|<p|<ul)(.+)$/gm, '<p>$1</p>');
       
       return html;
     }
 
-    // Set year in footer
-    const year = document.getElementById('year');
-    if (year) year.textContent = new Date().getFullYear();
+    // Extract slug from URL path
+    function getEventSlug() {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      // Find the part after 'event'
+      const eventIndex = pathParts.indexOf('event');
+      if (eventIndex !== -1 && eventIndex < pathParts.length - 1) {
+        return pathParts[eventIndex + 1];
+      }
+      return null;
+    }
+
+    // Load and render event
+    async function loadEventPage() {
+      try {
+        const slug = getEventSlug();
+        console.log('[Event Template] Slug:', slug);
+
+        if (!slug) {
+          document.getElementById('eventContent').innerHTML = '<div class="error-message">Event not found.</div>';
+          return;
+        }
+
+        // Fetch event markdown from /event/list/{slug}/{slug}.md
+        const mdPath = `/event/list/${slug}/${slug}.md`;
+        console.log('[Event Template] Fetching:', mdPath);
+        
+        const response = await fetch(mdPath);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${mdPath}: ${response.status}`);
+        }
+
+        const text = await response.text();
+        const parsed = parseMarkdownFile(text);
+
+        if (!parsed) {
+          document.getElementById('eventContent').innerHTML = '<div class="error-message">Error loading event.</div>';
+          return;
+        }
+
+        const { frontmatter, content } = parsed;
+
+        // Update page title and meta tags
+        document.title = `${frontmatter.title} — Clare Chen`;
+        document.querySelector('meta[property="og:title"]').setAttribute('content', `${frontmatter.title} — Clare Chen`);
+        document.querySelector('meta[property="og:description"]').setAttribute('content', frontmatter.description);
+
+        const dateFormatted = formatDateLong(frontmatter.date);
+
+        // Build HTML
+        const contentHtml = parseMarkdownContent(content);
+
+        const html = `
+          <h1 class="event-hero__title">${frontmatter.title}</h1>
+          
+          <div class="event-meta">
+            <div class="event-meta__item">
+              <span class="event-meta__label">Date</span>
+              <span class="event-meta__value">${dateFormatted}</span>
+            </div>
+            <div class="event-meta__item">
+              <span class="event-meta__label">Time</span>
+              <span class="event-meta__value">${frontmatter.time}</span>
+            </div>
+            <div class="event-meta__item">
+              <span class="event-meta__label">Location</span>
+              <span class="event-meta__value">${frontmatter.location}</span>
+            </div>
+          </div>
+
+          <div class="event-content">
+            ${contentHtml}
+          </div>
+
+          <div class="jotform-container">
+            <h3>Register for this event</h3>
+            <iframe src="https://form.jotform.com/${frontmatter.jotformId}" style="min-height: 600px;"></iframe>
+          </div>
+        `;
+
+        document.getElementById('eventContent').innerHTML = html;
+        console.log('[Event Template] Event loaded successfully');
+
+      } catch (error) {
+        console.error('[Event Template] Error loading event:', error);
+        document.getElementById('eventContent').innerHTML = '<div class="error-message">Error loading event. Please refresh the page.</div>';
+      }
+    }
 
     // Load event when page is ready
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadEventDetails);
+      document.addEventListener('DOMContentLoaded', loadEventPage);
     } else {
-      loadEventDetails();
+      loadEventPage();
     }
   </script>
 </body>

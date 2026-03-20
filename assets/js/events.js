@@ -36,6 +36,10 @@ async function parseMarkdownFile(url) {
         let value = valueParts.join(':').trim();
         // Remove quotes if present
         value = value.replace(/^["'](.*)["']$/, '$1');
+        // Handle array format: [item1, item2]
+        if (value.startsWith('[') && value.endsWith(']')) {
+          value = value.slice(1, -1).split(',').map(v => v.trim().replace(/^["'](.*)["']$/, '$1'));
+        }
         // Convert boolean strings
         if (value === 'true') value = true;
         if (value === 'false') value = false;
@@ -73,9 +77,12 @@ async function loadPublishedEvents() {
     
     console.log('[Events] Raw activeEvents value:', activeEventsValue);
 
-    // Parse the YAML array format (e.g., "- event1\n  - event2")
+    // Handle array format (parsed as array by parseMarkdownFile)
     let activeEventSlugs = [];
-    if (typeof activeEventsValue === 'string') {
+    if (Array.isArray(activeEventsValue)) {
+      activeEventSlugs = activeEventsValue;
+    } else if (typeof activeEventsValue === 'string') {
+      // Fallback for YAML array format: "- event1\n  - event2"
       activeEventSlugs = activeEventsValue
         .split('\n')
         .map(line => line.trim())
@@ -87,13 +94,15 @@ async function loadPublishedEvents() {
 
     const events = [];
 
-    // Load each active event
+    // Load each active event from /event/list/{slug}/{slug}.md
     for (const slug of activeEventSlugs) {
-      const eventPath = `event/events/${slug}.md`;
+      const eventPath = `event/list/${slug}/${slug}.md`;
       console.log(`[Events] Loading event: ${eventPath}`);
       const event = await parseMarkdownFile(eventPath);
       
       if (event) {
+        // Override the slug to match the folder structure
+        event.slug = slug;
         console.log(`[Events] Event loaded: ${event.frontmatter.title}`);
         events.push(event);
       } else {
@@ -103,8 +112,8 @@ async function loadPublishedEvents() {
 
     console.log(`[Events] Found ${events.length} active events`);
 
-    // Sort by date (most recent first)
-    events.sort((a, b) => new Date(b.frontmatter.date) - new Date(a.frontmatter.date));
+    // Sort by date (nearest future first)
+    events.sort((a, b) => new Date(a.frontmatter.date) - new Date(b.frontmatter.date));
 
     return events;
   } catch (error) {
@@ -125,16 +134,22 @@ function formatDateLong(dateString) {
 function createEventCard(event) {
   const { frontmatter, slug } = event;
   const dateFormatted = formatDateLong(frontmatter.date);
+  
+  // Determine tag based on event type (default to "Party")
+  const tags = frontmatter.tags ? (Array.isArray(frontmatter.tags) ? frontmatter.tags : [frontmatter.tags]) : ['Party'];
+  const tagHtml = tags.map((tag, idx) => {
+    const className = idx > 0 ? 'tag tag--muted' : 'tag';
+    return `<span class="${className}">${tag}</span>`;
+  }).join('\n        ');
 
   return `
     <article class="card reveal">
       <div class="card__top">
-        <span class="tag">Party</span>
-        <span class="tag tag--muted">Private</span>
+        ${tagHtml}
       </div>
       <h3 class="card__title">${frontmatter.title}</h3>
       <p class="card__text">
-        ${frontmatter.description}
+        ${frontmatter.description || ''}
       </p>
       <div class="card__date">
         <span class="card__date--icon">📅</span>
