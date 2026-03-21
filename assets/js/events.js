@@ -62,60 +62,54 @@ async function parseMarkdownFile(url) {
 
 async function loadPublishedEvents() {
   try {
-    console.log('[Events] Starting to load published events from master index...');
-    
-    // Read the master index file from GitHub raw content
-    const indexEvent = await parseMarkdownFile('https://raw.githubusercontent.com/jimmy1992abc/Clarechen.com.au/main/event/index.md');
-    
-    if (!indexEvent) {
-      console.error('[Events] Failed to load master index from GitHub');
+    console.log('[Events] Fetching active events list...');
+
+    const activeUrl = 'https://raw.githubusercontent.com/jimmy1992abc/Clarechen.com.au/main/event/active.md';
+    const response = await fetch(activeUrl);
+
+    if (!response.ok) {
+      console.error(`[Events] Failed to fetch active.md: ${response.status} ${response.statusText}`);
       return [];
     }
 
-    // Extract activeEvents from the frontmatter
-    const activeEventsValue = indexEvent.frontmatter.activeEvents;
-    
-    console.log('[Events] Raw activeEvents value:', activeEventsValue);
+    const text = await response.text();
 
-    // Handle array format (parsed as array by parseMarkdownFile)
-    let activeEventSlugs = [];
-    if (Array.isArray(activeEventsValue)) {
-      activeEventSlugs = activeEventsValue;
-    } else if (typeof activeEventsValue === 'string') {
-      // Fallback for YAML array format: "- event1\n  - event2"
-      activeEventSlugs = activeEventsValue
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.startsWith('-'))
-        .map(line => line.replace(/^-\s*/, '').trim());
-    }
+    // Parse any line starting with "- " as an event slug
+    const slugs = text
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.startsWith('- '))
+      .map(line => line.replace(/^-\s*/, '').trim())
+      .filter(Boolean);
 
-    console.log('[Events] Parsed active event slugs:', activeEventSlugs);
+    console.log('[Events] Active event slugs:', slugs);
 
     const events = [];
 
-    // Load each active event from GitHub raw content
-    for (const slug of activeEventSlugs) {
-      const eventPath = `https://raw.githubusercontent.com/jimmy1992abc/Clarechen.com.au/main/event/${slug}/${slug}.md`;
-      console.log(`[Events] Loading event: ${eventPath}`);
-      const event = await parseMarkdownFile(eventPath);
-      
+    for (const slug of slugs) {
+      const eventUrl = `https://raw.githubusercontent.com/jimmy1992abc/Clarechen.com.au/main/event/${slug}/${slug}.md`;
+      console.log(`[Events] Loading event: ${eventUrl}`);
+      const event = await parseMarkdownFile(eventUrl);
+
       if (event) {
-        // Override the slug to match the folder structure
         event.slug = slug;
-        console.log(`[Events] Event loaded: ${event.frontmatter.title}`);
+        console.log(`[Events] Loaded: ${event.frontmatter.title}`);
         events.push(event);
       } else {
         console.warn(`[Events] Failed to load event: ${slug}`);
       }
     }
 
-    console.log(`[Events] Found ${events.length} active events`);
+    // Keep only events on or after today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const upcoming = events.filter(e => new Date(e.frontmatter.date + 'T00:00:00') >= today);
 
-    // Sort by date (nearest future first)
-    events.sort((a, b) => new Date(a.frontmatter.date) - new Date(b.frontmatter.date));
+    // Sort by date ascending (nearest first)
+    upcoming.sort((a, b) => new Date(a.frontmatter.date) - new Date(b.frontmatter.date));
 
-    return events;
+    console.log(`[Events] ${upcoming.length} upcoming event(s) to display`);
+    return upcoming;
   } catch (error) {
     console.error('[Events] Error loading published events:', error);
     return [];
