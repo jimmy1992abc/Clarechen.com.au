@@ -1,6 +1,6 @@
 ---
 title: "Welcome to the World Party"
-type: "Party"
+tags: "Party"
 date: "2026-04-25"
 time: "11:00 AM"
 location: "Wild Ash Groove, Thornleigh"

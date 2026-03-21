@@ -1,6 +1,6 @@
 ---
 title: "Design Workshop"
-type: "Workshop"
+tags: "Workshop"
 date: "2026-05-20"
 time: "2:00 PM"
 location: "Studio XYZ, Sydney"

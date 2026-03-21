@@ -1,6 +1,6 @@
 ---
 title: "Event Title Here"
-type: "Party"
+tags: "Party"
 date: "2026-04-15"
 time: "7:00 PM"
 location: "Venue Name, City"
